@@ -4,6 +4,9 @@ const { default: helmet } = require("helmet");
 const compression = require("compression");
 const app = express();
 
+// Sử dụng được các biến môi trường trong ứng dụng
+require("dotenv").config();
+
 // Init middleware
 app.use(morgan("dev"));
 app.use(helmet());

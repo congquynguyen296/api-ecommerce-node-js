@@ -1,8 +1,14 @@
 "use strict";
 
-const connectString = `mongodb://admin:admin@localhost:27017/api-ecommerce?authSource=admin`;
 const mongoose = require("mongoose");
 const { countConnect } = require("../helpers/check.connect");
+
+// Lấy môi trường được xác định từ file config
+const config = require("../configs/config.mongodb");
+
+// Sử dụng biến được quy định trong config
+const connectString = `mongodb://${config.db.user}:${config.db.password}@${config.db.host}:${config.db.port}/${config.db.name}?authSource=admin`;
+console.log(connectString);
 
 class Database {
   constructor() {
