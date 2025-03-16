@@ -6,7 +6,8 @@ logs/
 *.log
 npm-debug.log*
 
-# Ignore environment variables
+
+# Ignore environment variables (cân nhắc giấu luôn chỗ khác)
 .env
 
 # Ignore build output (nếu có)

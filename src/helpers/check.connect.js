@@ -24,10 +24,10 @@ const checkOverload = () => {
         const maxConnections = numberCore * 5;
 
         // Các connect được active
-        console.log(`Active connection: ${numberConnection}`);
+        // console.log(`Active connection: ${numberConnection}`);
 
         // Tính bộ nhớ được sử dụng
-        console.log(`Memmory use: ${memoryUse / 1024 / 1024} MB`);
+        // console.log(`Memmory use: ${memoryUse / 1024 / 1024} MB`);
 
         // Báo động overload
         if (numberConnection > maxConnections) {

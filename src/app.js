@@ -10,24 +10,27 @@ require("dotenv").config();
 // Init middleware
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(compression())
+app.use(compression());
+app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
 // Init db
 require("./databases/init.mongodb");
 
 const { checkOverload } = require("./helpers/check.connect");
-checkOverload();
+checkOverload(); // Kiểm soát quá trình kết nối khi khởi tạo db
 
 // Init routes
-app.get("/", (req, res, next) => {
-    const strCompress = "Demo Compression";
-
-    return res.status(200).json({
-        message: "Hello, this is morgan",
-        metadata: strCompress.repeat(10000),
-    });
-});
+app.use(require("./routes/index"));
 
 // Init handle error
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(500).json({ message: "Something is wrong." });
+});
 
 module.exports = app;

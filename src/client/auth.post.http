@@ -1,0 +1,11 @@
+@base-url = http://localhost:3000/api/v1/shop
+
+### Sign up
+POST {{base-url}}/auth/sign-up
+Content-Type: application/json
+
+{
+    "name": "congquynguyen",
+    "email": "congquynguyen1234@gmail.com",
+    "password": "congquynguyen"
+}
