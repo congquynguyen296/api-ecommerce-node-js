@@ -11,5 +11,4 @@ process.on('SIGINT', () => {
     server.close(() => {
         console.log("Exit server");
     });
-    // app.notify("Crass app");
 });

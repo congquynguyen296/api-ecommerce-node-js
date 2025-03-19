@@ -3,7 +3,7 @@
 const keyModel = require("../models/key.model");
 
 class KeyService {
-  static createToken = async ({ userId, publicKey }) => {
+  static storePublicKey = async ({ userId, publicKey }) => {
     try {
       // publicKey là biến được hash nên có kiểu buffer, cần convert về String để lưu db
       const publicKeyString = publicKey.toString();
@@ -21,4 +21,5 @@ class KeyService {
   };
 }
 
+// Export class để bên import tự quyết định cách dùng
 module.exports = KeyService;

@@ -5,7 +5,6 @@ const router = express.Router();
 
 // Sử dụng các router
 router.use("/api/v1", require("./auth/auth.router"));
-router.use("/api/v1", require("./shop/shop.router"));
 
 // Đây là router mặc định
 router.get("/", (req, res, next) => {

@@ -5,7 +5,9 @@ const router = express.Router();
 
 // Gọi đến hàm đã khai báo bên controller và gán cho router
 const authController = require("../../controllers/auth.controller");
+const asyncHandle = require("../../middlewares/core/async.response");
 
-router.use("/shop/auth/sign-up", authController.signUp);
+// Sử dụng async handle
+router.use("/shop/auth/sign-up", asyncHandle(authController.signUp));
 
 module.exports = router;

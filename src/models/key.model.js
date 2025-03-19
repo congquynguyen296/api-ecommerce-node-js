@@ -6,7 +6,7 @@ const DOCUMENT_NAME = "Key";
 const COLLECTION_NAME = "Keys";
 
 // Declare the Schema of the Mongo model
-var keyTokenSchema = new Schema(
+var keySchema = new Schema(
   {
     user: {
       type: String,
@@ -29,5 +29,5 @@ var keyTokenSchema = new Schema(
   }
 );
 
-//Export the model
-module.exports = model(DOCUMENT_NAME, keyTokenSchema);
+// Export the model
+module.exports = model(DOCUMENT_NAME, keySchema);

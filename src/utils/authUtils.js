@@ -8,7 +8,7 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
     // Access token: Tạo thông qua private key
     const accessToken = await JWT.sign(payload, privateKey, {
       algorithm: "RS256", // Thuật toán
-      expiresIn: "2 days", // Thời gian sống
+      expiresIn: "1 days", // Thời gian sống
     });
 
     // Refresh token: Tạo thông qua private key
@@ -17,7 +17,8 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
       expiresIn: "7 days",
     });
 
-    // Verify token bằng public key (decode)
+    // Verify token bằng public key (decode): Như đã nói ở hàm signUp, phải dùng chính cái public key
+    // được lưu trong db để verify AT được ký bởi private key
     JWT.verify(accessToken, publicKey, (error, decode) => {
       if (error) {
         console.error(`Error verify ${error}`);
