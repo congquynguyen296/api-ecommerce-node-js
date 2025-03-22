@@ -1,11 +1,31 @@
 "use strict";
 
+const {
+  OkResponse,
+  CreatedResponse,
+} = require("../middlewares/core/success.response");
 const AuthService = require("../services/auth.service");
 
 class AuthController {
   signUp = async (req, res, next) => {
-    console.log(`[P]::signUp::`, req.body);
-    return res.status(201).json(await AuthService.signUp(req.body));
+    new CreatedResponse({
+      message: "Sign up successful",
+      metadata: AuthService.signUp(req.body),
+    }).send(res);
+  };
+
+  signIn = async (req, res, next) => {
+    new OkResponse({
+      message: "Login successful",
+      metadata: await AuthService.signIn(req.body),
+    }).send(res);
+  };
+
+  logout = async (req, res, next) => {
+    new OkResponse({
+      message: "Logout successful",
+      metadata: await AuthService.logout(req.keyStored),
+    }).send(res);
   };
 }
 

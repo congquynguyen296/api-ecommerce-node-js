@@ -1,19 +1,20 @@
 @base-url = http://localhost:3000/api/v1/shop
 
 ### Sign up
-POST {{base-url}}/auth/sign-upp
+POST {{base-url}}/auth/sign-up
 Content-Type: application/json
 
 {
     "name": "congquynguyen",
-    "email": "congquynguyen1234@gmail.com",
+    "email": "test1@gmail.com",
     "password": "congquynguyen"
 }
 
-### Get users
-GET http://localhost:3000/users
+### Sign in
+POST {{base-url}}/auth/sign-in
 Content-Type: application/json
 
-
-XStream xstream = new XStream();
-xstream.allowTypesByWildcard(new String[] {"org.owasp.webgoat.**"});
+{
+    "email": "test1@gmail.com",
+    "password": "congquynguyen"
+}

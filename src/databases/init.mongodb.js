@@ -1,7 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const { countConnect } = require("../helpers/check.connect");
+const { countConnect } = require("../helpers/checkConnect");
 
 // Lấy môi trường được xác định từ file config
 const config = require("../configs/config.mongodb");

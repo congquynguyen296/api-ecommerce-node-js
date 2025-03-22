@@ -22,18 +22,10 @@ app.use(
 require("./databases/init.mongodb");
 
 const { NotFoundError } = require("./middlewares/core/error.response");
-const { checkOverload } = require("./helpers/check.connect");
+const { checkOverload } = require("./helpers/checkConnect");
 const router = require("./routes/index");
 const { OkResponse } = require("./middlewares/core/success.response");
 checkOverload(); // Kiểm soát quá trình kết nối khi khởi tạo db
-
-router.get("/users", (req, res, next) => {
-  const users = [
-    { userId: 1, name: "Nguyễn Văn A" },
-    { userId: 2, name: "Nguyễn Văn B" },
-  ];
-  new OkResponse({ message: "List user", metadata: users }).send(res);
-});
 
 // Init routes
 app.use(require("./routes/index"));
