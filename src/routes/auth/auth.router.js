@@ -15,5 +15,6 @@ router.use("/shop/auth/sign-in", asyncHandle(authController.signIn));
 // Authen khi logout
 router.use(auth);
 router.use("/shop/auth/log-out", asyncHandle(authController.logout));
+router.use("/shop/auth/refresh", asyncHandle(authController.verify));
 
 module.exports = router;

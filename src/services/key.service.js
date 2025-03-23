@@ -5,7 +5,7 @@ const keyModel = require("../models/key.model");
 const { Types } = require("mongoose");
 
 class KeyService {
-  static storeAndUpdateKeyToken = async ({
+  static storeAndUpdateKeyTokenByUserId = async ({
     userId,
     publicKey,
     privateKey,
@@ -16,30 +16,39 @@ class KeyService {
         publicKey,
         privateKey,
         refreshTokensUsed: [],
-        refreshToken,
+        refreshToken: refreshToken,
       },
       options = {
         upsert: true, // Update khi có sự thay đổi
         new: true, // Trả về cái vừa update chứ không phải cái cũ
       };
     const tokens = await keyModel.findOneAndUpdate(filter, update, options);
-    return tokens ? tokens.publicKey : null;
+    return tokens ? tokens : null;
   };
 
   static findKeyTokenByUserId = async (userId) => {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new InternalServerError("Invalid userId");
-    }
-    return await keyModel.findOne({ user: userId }).lean();
+    const objectId = new Types.ObjectId(userId); // Chuyển chuỗi thành ObjectId
+    const keyToken = await keyModel.findOne({ user: objectId }).lean();
+    return keyToken;
   };
 
   static removeKeyTokenById = async (id) => {
     return await keyModel.deleteOne({ _id: id });
   };
 
-  static findByRefreshTokenUsed = async (refreshToken) => {
+  static findKeyTokenByRefreshTokenUsed = async (refreshToken) => {
     return await keyModel.findOne({ refreshTokensUsed: refreshToken }).lean();
-  }
+  };
+
+  static deleteKeyTokenByUserId = async (userId) => {
+    return await keyModel.deleteOne({ user: userId });
+  };
+
+  // Lưu ý với lean: Nếu dùng lean thì Mongoose sẽ trả về một POJO, còn không dùng thì sẽ trả về một
+  // document (có thể thực hiện update và save trên document)
+  static findKeyTokenByRefreshToken = async (refreshToken) => {
+    return await keyModel.findOne({ refreshToken: refreshToken });
+  };
 }
 
 // Export class để bên import tự quyết định cách dùng
