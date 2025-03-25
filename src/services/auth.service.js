@@ -1,14 +1,12 @@
 "use strict";
 
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
 
 const userModel = require("../models/user.model");
 const KeyService = require("./key.service");
 
 const {
   createTokenPair,
-  createKeyPairUsingBase64,
   createKeyPair,
   verifyJWT,
 } = require("../utils/authUtils");

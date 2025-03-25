@@ -1,6 +1,6 @@
 "use strict";
 
-const userModel = require("../models/user.model");
+const UserModel = require("../models/user.model");
 
 class UserService {
 
@@ -14,7 +14,7 @@ class UserService {
       rolse: true,
     },
   }) => {
-    return userModel.findOne({ email }).select(select).lean();
+    return UserModel.findOne({ email }).select(select).lean();
   };
 }
 
