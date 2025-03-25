@@ -4,6 +4,7 @@ const DOCUMENT_NAME = "Product";
 const COLLECTION_NAME = "Products";
 
 const { model, Types, Schema } = require("mongoose");
+const slugify = require("slugify");
 
 const productSchema = new Schema(
   {
@@ -18,12 +19,34 @@ const productSchema = new Schema(
       enum: ["Clothing", "Jewelry", "Shoes"],
     },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+
+    // More
+    slug: { type: String, require: true },
+    rating: {
+      type: Number,
+      default: 4.5,
+      min: [1, "Rating must be above 1.0"],
+      max: [5, "Rating must be above 5.0"],
+      set: (value) => Math.round(value * 10) / 10, // Làm tròn
+    },
+    variation: { type: Array, default: [] },
+    isDraft: { type: Boolean, default: true, index: true, select: false }, // Đánh index
+    isPublic: { type: Boolean, default: false, index: true, select: false },
   },
   {
     collection: COLLECTION_NAME,
     timestamps: true,
   }
 );
+
+// Đánh index cho tìm kiếm
+productSchema.index({ name: "text", description: "text" });
+
+// Slug here
+productSchema.pre("save", function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
 
 // Schema cho Clothing (không cần productId): _id của mỗi schema con sẽ đúng bằng cái _id của product
 const clothingSchema = new Schema(

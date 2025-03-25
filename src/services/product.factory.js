@@ -7,6 +7,7 @@ const {
   ShoesModel,
 } = require("../models/product.model");
 
+
 class ProductFactory {
   static async createProduct(type, payload) {
     switch (type) {
@@ -23,7 +24,19 @@ class ProductFactory {
 }
 
 class Product {
-  constructor({ name, thumbnail, description, price, quantity, type, user }) {
+  constructor({
+    name,
+    thumbnail,
+    description,
+    price,
+    quantity,
+    type,
+    user,
+    rating,
+    variation,
+    isDraft,
+    isPublic,
+  }) {
     this.name = name;
     this.thumbnail = thumbnail;
     this.description = description;
@@ -31,6 +44,10 @@ class Product {
     this.quantity = quantity;
     this.type = type;
     this.user = user;
+    this.rating = rating;
+    this.isDraft = isDraft;
+    this.isPublic = isPublic;
+    this.variation = variation;
   }
 
   async saveCommonAttributes() {

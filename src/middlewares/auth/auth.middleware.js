@@ -17,7 +17,7 @@ const HEADER = {
   AUTHORIZATION: "authorization",
 };
 
-// Hàm để authentication cho client khi muốn logout
+// Hàm để authentication cho client khi muốn truy cập vào tài nguyên hệ thống
 const auth = async (req, res, next) => {
   try {
     const userId = req.headers[HEADER.CLIENT_ID];
