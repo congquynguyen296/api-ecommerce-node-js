@@ -2,7 +2,7 @@
 
 const bcrypt = require("bcrypt");
 
-const userModel = require("../models/user.model");
+const ShopModel = require("../models/shop.model");
 const KeyService = require("./key.service");
 
 const {
@@ -19,7 +19,7 @@ const {
   ForbiddenError,
   InternalServerError,
 } = require("../middlewares/core/error.response");
-const UserService = require("./user.service");
+const ShopService = require("./shop.service");
 const {
   OkResponse,
   CreatedResponse,
@@ -27,7 +27,7 @@ const {
 
 // Định nghĩa role
 const RoleShop = {
-  USER: "0000",
+  SHOP: "0000",
   WRITE: "0001",
   READ: "0002",
   EDIT: "0003",
@@ -37,9 +37,9 @@ class AuthService {
   // 1. Hàm đăng ký tạo tài khoản:
   static signUp = async ({ name, email, password }) => {
     // Check email already exits || lean() sẽ giúp query nhanh hơn
-    const existedUser = await userModel.findOne({ email }).lean();
+    const existedShop = await ShopModel.findOne({ email }).lean();
 
-    if (existedUser) {
+    if (existedShop) {
       throw new ConflictRequestError("Email already existed");
     }
 
@@ -47,15 +47,15 @@ class AuthService {
     const passwordHash = await bcrypt.hash(password, 10);
 
     // Created if not existed
-    const newUser = await userModel.create({
+    const newShop = await ShopModel.create({
       name: name,
       email: email,
       password: passwordHash,
-      roles: [RoleShop.USER],
+      roles: [RoleShop.SHOP],
     });
 
     // Khi tạo thành công sẽ có được refresh token và access token
-    if (newUser) {
+    if (newShop) {
       // Dùng giải thuật RSA bất đối xứng
       const { publicKey, privateKey } = await createKeyPair();
 
@@ -77,17 +77,17 @@ class AuthService {
       // (token do server tạo), không kiểm tra "ai đang dùng token" hay "token có bị lộ không".
       // === === === === === ===
 
-      // Tạo cặp access token và refresh token đẩy về cho user -> Đăng ký user thành công
+      // Tạo cặp access token và refresh token đẩy về cho shop -> Đăng ký shop thành công
       const tokens = await createTokenPair(
-        { userId: newUser._id, email: newUser.email }, // Payload truyền vào những gì thì khi decode
+        { shopId: newShop._id, email: newShop.email }, // Payload truyền vào những gì thì khi decode
         // ra sẽ nhận được tương ứng. Còn trường iat và exp là do thư viện jsonwebtoken tự động thêm
 
         privateKey // Đây là private dùng để tạo chữ ký như đã nói ở trên
       );
 
       // Tạo xong thì save vào collection KeyStore
-      const keyToken = await KeyService.storeAndUpdateKeyTokenByUserId({
-        userId: newUser._id, // Đây là biến id của database
+      const keyToken = await KeyService.storeAndUpdateKeyTokenByShopId({
+        shopId: newShop._id, // Đây là biến id của database
         publicKey: publicKey,
         privateKey: privateKey,
         refreshToken: tokens.refreshToken,
@@ -102,8 +102,8 @@ class AuthService {
       return new CreatedResponse({
         message: "Registed success",
         metadata: {
-          user: getIntoData({
-            object: newUser,
+          shop: getIntoData({
+            object: newShop,
             fields: ["_id", "name", "email", "password"],
           }),
           refreshToken: keyToken.refreshToken,
@@ -123,11 +123,11 @@ class AuthService {
   */
   static signIn = async ({ email, password, refreshToken }) => {
     // Check email
-    const exitedUser = await UserService.findOneByEmail({ email });
-    if (!exitedUser) throw new NotFoundError("User not registed");
+    const exitedShop = await ShopService.findOneByEmail({ email });
+    if (!exitedShop) throw new NotFoundError("Shop not registed");
 
     // Check password
-    const isMatch = bcrypt.compare(password, exitedUser.password);
+    const isMatch = bcrypt.compare(password, exitedShop.password);
     if (!isMatch) throw new UnauthorizedError("Password is unvalid");
 
     // Create AT + RT and save in db: Dùng giải thuật bất đối xứng
@@ -138,12 +138,12 @@ class AuthService {
     }
 
     const tokens = await createTokenPair(
-      { userId: exitedUser._id, email: exitedUser.email },
+      { shopId: exitedShop._id, email: exitedShop.email },
       privateKey
     );
 
-    const newKeyStored = await KeyService.storeAndUpdateKeyTokenByUserId({
-      userId: exitedUser._id,
+    const newKeyStored = await KeyService.storeAndUpdateKeyTokenByShopId({
+      shopId: exitedShop._id,
       publicKey: publicKey,
       privateKey: privateKey,
       refreshToken: tokens.refreshToken,
@@ -153,8 +153,8 @@ class AuthService {
     return new OkResponse({
       message: "Login successful",
       metadata: {
-        user: getIntoData({
-          object: exitedUser,
+        shop: getIntoData({
+          object: exitedShop,
           fields: ["_id", "name", "email", "password"],
         }),
         refreshToken: newKeyStored.refreshToken,
@@ -180,12 +180,12 @@ class AuthService {
 
     // Trường hợp tìm thấy trong mảng RT used: Decode xem tài khoản này là ai trong hệ thống
     if (existedKeyToken) {
-      const { userId } = await verifyJWT(
+      const { shopId } = await verifyJWT(
         refreshToken,
         existedKeyToken.publicKey
       );
       // Xóa đi (sẽ yêu cầu ng dùng đăng nhập lại)
-      await KeyService.deleteKeyTokenByUserId(userId);
+      await KeyService.deleteKeyTokenByShopId(shopId);
       throw new ForbiddenError("Key token is unsave, pls login agian!");
     }
 
@@ -201,18 +201,18 @@ class AuthService {
 
     // Tiếp tục kiểm tra xem liệu token đó có đúng là một thành viên của hệ thống hay không thông qua việc
     // decode cái token đó (nếu nó thực sự là RT đang được hệ thống lưu)
-    const { userId, email } = await verifyJWT(
+    const { shopId, email } = await verifyJWT(
       refreshToken,
       keyTokenHolderRefreshToken.publicKey
     );
-    const existedUser = UserService.findOneByEmail({ email });
-    if (!existedUser) {
-      throw new UnauthorizedError("User not registed");
+    const existedShop = ShopService.findOneByEmail({ email });
+    if (!existedShop) {
+      throw new UnauthorizedError("Shop not registed");
     }
 
     // Ok hết thì cấp cho cặp mới và đồng thời đưa RT vào mảng RT used
     const newTokens = await createTokenPair(
-      { userId, email },
+      { shopId, email },
       keyTokenHolderRefreshToken.privateKey
     );
 
@@ -222,7 +222,7 @@ class AuthService {
     keyTokenHolderRefreshToken.save();
 
     return {
-      user: existedUser,
+      shop: existedShop,
       tokens: newTokens,
     };
   };

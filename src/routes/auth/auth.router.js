@@ -13,7 +13,7 @@ router.use("/shop/auth/sign-up", asyncHandle(AuthController.signUp));
 router.use("/shop/auth/sign-in", asyncHandle(AuthController.signIn));
 
 // Authen khi get resource
-router.use(auth);
+// router.use(auth);
 router.use("/shop/auth/log-out", asyncHandle(AuthController.logout));
 router.use("/shop/auth/refresh", asyncHandle(AuthController.verify));
 

@@ -8,11 +8,11 @@ const COLLECTION_NAME = "Keys";
 // Declare the Schema of the Mongo model
 var keySchema = new Schema(
   {
-    user: {
+    shop: {
       type: String,
       required: true,
       unique: true,
-      ref: "User",
+      ref: "Shop",
     },
     publicKey: {
       type: String,

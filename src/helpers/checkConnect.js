@@ -9,7 +9,7 @@ const _SECONDS = 5000;
 // Count connect
 const countConnect = () => {
     const numberConnection = mongoose.connections.length;
-    console.log(`Number connection of db is ${numberConnection} (this check in helper)`);
+    // console.log(`Number connection of db is ${numberConnection} (this check in helper)`);
     return numberConnection;
 }
 

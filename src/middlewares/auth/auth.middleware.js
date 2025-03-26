@@ -3,7 +3,7 @@
 // Đây là nơi verify tài khoảng dựa vào bearer token (AT) trước khi req đi vào hệ thống
 // Đây ở middleware
 
-const { findKeyTokenByUserId } = require("../../services/key.service");
+const { findKeyTokenByShopId } = require("../../services/key.service");
 const {
   UnauthorizedError,
   NotFoundError,
@@ -20,16 +20,16 @@ const HEADER = {
 // Hàm để authentication cho client khi muốn truy cập vào tài nguyên hệ thống
 const auth = async (req, res, next) => {
   try {
-    const userId = req.headers[HEADER.CLIENT_ID];
-    if (!userId) {
-      throw new UnauthorizedError("UserID is invalid on HEADER");
+    const shopId = req.headers[HEADER.CLIENT_ID];
+    if (!shopId) {
+      throw new UnauthorizedError("ShopID is invalid on HEADER");
     }
 
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestError("UserID invalid (must be ObjectId)");
+    if (!Types.ObjectId.isValid(shopId)) {
+      throw new BadRequestError("ShopID invalid (must be ObjectId)");
     }
 
-    const keyStored = await findKeyTokenByUserId(userId);
+    const keyStored = await findKeyTokenByShopId(shopId);
     if (!keyStored) {
       throw new NotFoundError("Do not find key store");
     }
@@ -46,12 +46,12 @@ const auth = async (req, res, next) => {
     }
     const accessToken = authHeader.split(" ")[1];
 
-    const decodeUser = JWT.verify(accessToken, keyStored.publicKey, {
+    const decodeShop = JWT.verify(accessToken, keyStored.publicKey, {
       algorithms: ["RS256"],
     });
-    console.log("Decoded user:", decodeUser);
-    if (userId != decodeUser.userId) {
-      throw new UnauthorizedError("Invalid user");
+    console.log("Decoded shop:", decodeShop);
+    if (shopId != decodeShop.shopId) {
+      throw new UnauthorizedError("Invalid shop");
     }
 
     req.keyStored = keyStored;

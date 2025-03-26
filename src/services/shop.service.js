@@ -1,8 +1,8 @@
 "use strict";
 
-const UserModel = require("../models/user.model");
+const ShopModel = require("../models/shop.model");
 
-class UserService {
+class ShopService {
 
   static findOneByEmail = async ({
     email,
@@ -14,8 +14,8 @@ class UserService {
       rolse: true,
     },
   }) => {
-    return UserModel.findOne({ email }).select(select).lean();
+    return ShopModel.findOne({ email }).select(select).lean();
   };
 }
 
-module.exports = UserService;
+module.exports = ShopService;

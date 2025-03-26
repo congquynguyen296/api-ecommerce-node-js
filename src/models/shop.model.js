@@ -2,11 +2,11 @@
 
 const { model, Schema, Types } = require("mongoose");
 
-const DOCUMENT_NAME = "User";
-const COLLECTION_NAME = "Users";
+const DOCUMENT_NAME = "Shop";
+const COLLECTION_NAME = "Shops";
 
 // Định nghĩa schema cho collection "Shops"
-const userSchema = new Schema(
+const shopSchema = new Schema(
   {
     // Tên cửa hàng, giới hạn độ dài tối đa 150 ký tự, loại bỏ khoảng trắng thừa
     name: {
@@ -49,4 +49,4 @@ const userSchema = new Schema(
 );
 
 // Export model để sử dụng trong ứng dụng
-module.exports = model(DOCUMENT_NAME, userSchema);
+module.exports = model(DOCUMENT_NAME, shopSchema);

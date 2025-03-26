@@ -1,6 +1,9 @@
 "use strict";
 
-const { BadRequestError } = require("../middlewares/core/error.response");
+const {
+  BadRequestError,
+  NotFoundError,
+} = require("../middlewares/core/error.response");
 const {
   CreatedResponse,
   OkResponse,
@@ -26,31 +29,47 @@ class ProductController {
   };
 
   // Get data
-  getAllDraftForUser = async (req, res, next) => {
-    const userId = req.headers["x-client-id"]; // Lấy từ header
-    if (!userId) {
+  getAllDraftForShop = async (req, res, next) => {
+    const shopId = req.headers["x-client-id"]; // Lấy từ header
+    if (!shopId) {
       throw new BadRequestError("Missing x-client-id in headers");
     }
     return new OkResponse({
       message: "Get all draft is success",
-      metadata: await ProductService.findAllDraftForUser({
-        user: userId,
+      metadata: await ProductService.findAllDraftForShop({
+        shop: shopId,
       }),
     }).send(res);
   };
 
   // Put data
-  publicProductByUser = async (req, res, next) => {
+  publishProductByShop = async (req, res, next) => {
     const productId = req.params.id;
-    const userId = req.headers["x-client-id"];
-    if (!userId || !productId) {
+    const shopId = req.headers["x-client-id"];
+    if (!shopId || !productId) {
       throw new BadRequestError("Missing x-client-id or product id in headers");
     }
     return new OkResponse({
       message: "Product is publiced",
-      metadata: await ProductService.publicProductByUser({
-        user: userId,
+      metadata: await ProductService.publishProductByShop({
+        shop: shopId,
         productId,
+      }),
+    }).send(res);
+  };
+
+  unpublishProductByShop = async (req, res, next) => {
+    const productId = req.params.id;
+    const shopId = req.headers["x-client-id"];
+
+    if (!productId || !shopId) {
+      throw new BadRequestError("Params or client id must be required");
+    }
+    return new OkResponse({
+      message: "Unpublish success",
+      metadata: await ProductService.unpublishProductByShop({
+        shop: shopId,
+        productId: productId,
       }),
     }).send(res);
   };
@@ -66,6 +85,20 @@ class ProductController {
     return new OkResponse({
       message: "Search products successfully",
       metadata: results,
+    }).send(res);
+  };
+
+  // Find all product for shop
+  findAllProductForShop = async (req, res, next) => {
+    const shopId = req.headers["x-client-id"];
+    if (!shopId) {
+      throw new NotFoundError("Params is invalid at id shop");
+    }
+    return new OkResponse({
+      message: "All product for shop",
+      metadata: await ProductService.findAllProductForShop({
+        shop: shopId,
+      }),
     }).send(res);
   };
 }

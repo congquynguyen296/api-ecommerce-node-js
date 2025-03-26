@@ -18,7 +18,7 @@ const productSchema = new Schema(
       required: true,
       enum: ["Clothing", "Jewelry", "Shoes"],
     },
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    shop: { type: Schema.Types.ObjectId, ref: "Shop", required: true },
 
     // More
     slug: { type: String, require: true },

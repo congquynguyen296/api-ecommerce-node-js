@@ -11,18 +11,26 @@ const { auth } = require("../../middlewares/auth/auth.middleware");
 router.use("/shop/products/search", ProductController.searchProduct);
 
 // Authen khi get resource
-router.use(auth);
+// router.use(auth);
 router.use(
-  "/shop/products/add-new-product",
+  "/shop/products/-new-product",
   asyncHandle(ProductController.createProduct)
 );
-router.use(
+router.use(             
   "/shop/products/drafts/all",
-  asyncHandle(ProductController.getAllDraftForUser)
+  asyncHandle(ProductController.getAllDraftForShop)
 );
 router.use(
   "/shop/products/publish/:id",
-  asyncHandle(ProductController.publicProductByUser)
+  asyncHandle(ProductController.publishProductByShop)
+);
+router.use(
+  "/shop/products/unpublish/:id",
+  asyncHandle(ProductController.unpublishProductByShop)
+);
+router.use(
+  "/shop/products/all",
+  asyncHandle(ProductController.findAllProductForShop)
 );
 
 module.exports = router;

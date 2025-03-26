@@ -31,7 +31,7 @@ class Product {
     price,
     quantity,
     type,
-    user,
+    shop,
     rating,
     variation,
     isDraft,
@@ -43,7 +43,7 @@ class Product {
     this.price = price;
     this.quantity = quantity;
     this.type = type;
-    this.user = user;
+    this.shop = shop;
     this.rating = rating;
     this.isDraft = isDraft;
     this.isPublic = isPublic;

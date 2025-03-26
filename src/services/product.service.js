@@ -2,9 +2,11 @@
 
 const { validateInput } = require("../utils/validationUtils");
 const {
-  findAllDraftForUser,
-  publicProductByUser,
+  findAllDraftForShop,
+  publishProductByShop,
   searchProduct,
+  findAllProductForShop,
+  unpublishProductByShop,
 } = require("../repositories/product.repo");
 const { BadRequestError } = require("../middlewares/core/error.response");
 const ProductFactory = require("./product.factory");
@@ -21,7 +23,7 @@ class ProductService {
       "description",
       "price",
       "quantity",
-      "user",
+      "shop",
       "attributes",
       "variation",
     ];
@@ -30,21 +32,29 @@ class ProductService {
   }
 
   // Tìm tất cả các sản phẩm là draft: Phân trang
-  static async findAllDraftForUser({ user, limit = 50, skip = 0 }) {
-    const query = { user, isDraft: true }; // user sẽ được truyền ObjectId vào
-    return await findAllDraftForUser({ query, limit: limit, skip: skip });
+  static async findAllDraftForShop({ shop, limit = 50, skip = 0 }) {
+    const query = { shop, isDraft: true }; // shop sẽ được truyền ObjectId vào
+    return await findAllDraftForShop({ query, limit: limit, skip: skip });
   }
 
   // Bỏ nháp - public một sản phẩm
-  static async publicProductByUser({ user, productId }) {
+  static async publishProductByShop({ shop, productId }) {
+    return publishProductByShop({ shop, productId });
+  }
 
-    // Login nghiệp vụ sẽ ở đây
-    return publicProductByUser({ user, productId });
+  // Thêm vào nháp - unpublish một sản phẩm
+  static async unpublishProductByShop({ shop, productId }) {
+    return unpublishProductByShop({ shop, productId });
   }
 
   // Tìm kiếm
   static async searchProduct({ keySearch, limit = 50, skip = 0 }) {
     return await searchProduct({ keySearch, limit, skip });
+  }
+
+  // Lấy tất cả sản phẩm
+  static async findAllProductForShop({ shop, limit = 50, skip = 0 }) {
+    return findAllProductForShop({ shop, limit, skip });
   }
 }
 

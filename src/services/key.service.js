@@ -4,13 +4,13 @@ const KeyModel = require("../models/key.model");
 const { Types } = require("mongoose");
 
 class KeyService {
-  static storeAndUpdateKeyTokenByUserId = async ({
-    userId,
+  static storeAndUpdateKeyTokenByShopId = async ({
+    shopId,
     publicKey,
     privateKey,
     refreshToken,
   }) => {
-    const filter = { user: userId }, // Tham chiếu qua tên collecion (ref user)
+    const filter = { shop: shopId }, // Tham chiếu qua tên collecion (ref shop)
       update = {
         publicKey,
         privateKey,
@@ -25,9 +25,9 @@ class KeyService {
     return tokens ? tokens : null;
   };
 
-  static findKeyTokenByUserId = async (userId) => {
-    const objectId = new Types.ObjectId(userId); // Chuyển chuỗi thành ObjectId
-    const keyToken = await KeyModel.findOne({ user: objectId }).lean();
+  static findKeyTokenByShopId = async (shopId) => {
+    const objectId = new Types.ObjectId(shopId); // Chuyển chuỗi thành ObjectId
+    const keyToken = await KeyModel.findOne({ shop: objectId }).lean();
     return keyToken;
   };
 
@@ -39,8 +39,8 @@ class KeyService {
     return await KeyModel.findOne({ refreshTokensUsed: refreshToken }).lean();
   };
 
-  static deleteKeyTokenByUserId = async (userId) => {
-    return await KeyModel.deleteOne({ user: userId });
+  static deleteKeyTokenByShopId = async (shopId) => {
+    return await KeyModel.deleteOne({ shop: shopId });
   };
 
   // Lưu ý với lean: Nếu dùng lean thì Mongoose sẽ trả về một POJO, còn không dùng thì sẽ trả về một
