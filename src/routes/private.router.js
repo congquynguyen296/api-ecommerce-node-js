@@ -1,17 +1,18 @@
 "use strict";
 
 const express = require("express");
-const asyncHandle = require("../../middlewares/core/async.response");
+const asyncHandle = require("../middlewares/core/async.response");
 const router = express.Router();
 
-const ProductController = require("../../controllers/product.controller");
-const { auth } = require("../../middlewares/auth/auth.middleware");
+const ProductController = require("../controllers/product.controller");
+const AuthController = require("../controllers/auth.controller");
+const DiscountController = require("../controllers/discount.controller");
 
-// Search không cần auth
-router.use("/shop/products/search", ProductController.searchProduct);
+/// Auth
+router.use("/shop/auth/log-out", asyncHandle(AuthController.logout));
+router.use("/shop/auth/refresh", asyncHandle(AuthController.verify));
 
-// Authen khi get resource
-// router.use(auth);
+/// Product
 router.use(
   "/shop/products/add-new-product",
   asyncHandle(ProductController.createProduct)
@@ -35,6 +36,16 @@ router.use(
 router.use(
   "/shop/products/update/:id",
   asyncHandle(ProductController.updateProductById)
+);
+
+/// Discount
+router.use(
+  "/shop/discounts/get-all-with-product/:productId",
+  asyncHandle(DiscountController.getAllDiscountCodeWithProduct)
+);
+router.use(
+  "/shop/discounts/create-new-discount",
+  asyncHandle(DiscountController.createDiscount)
 );
 
 module.exports = router;
