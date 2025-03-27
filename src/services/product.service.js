@@ -14,7 +14,7 @@ const {
 } = require("../repositories/product.repo");
 const { BadRequestError } = require("../middlewares/core/error.response");
 const ProductFactory = require("./product.factory");
-const { update } = require("lodash");
+const { insertIntoInventory } = require("../repositories/inventory.repo");
 
 class ProductService {
   static async createProduct(type, productData) {
@@ -33,7 +33,23 @@ class ProductService {
       "variation",
     ];
     validateInput(productData, requiredFields);
-    return await ProductFactory.createProduct(type, productData);
+
+    const createdProduct = await ProductFactory.createProduct(
+      type,
+      productData
+    );
+
+    // Sau khi thêm sẽ add vào inventory
+    const inventoried = await insertIntoInventory(
+      createdProduct._id,
+      createdProduct.shop,
+      createdProduct.quantity
+    );
+
+    return {
+      newProduct: createdProduct,
+      inventory: inventoried,
+    };
   }
 
   // Tìm tất cả các sản phẩm là draft: Phân trang
@@ -64,7 +80,6 @@ class ProductService {
 
   // Update product: Phải đảm bảo loại được các giá trị undefine hoặc none
   static async updateProductById(productId, updateData) {
-
     // Lấy sản phẩm và attribute của nó lên
     const product = await findProductById(productId);
     let attributes = null;
