@@ -7,9 +7,14 @@ const {
   searchProduct,
   findAllProductForShop,
   unpublishProductByShop,
+  findProductById,
+  findAttributesProductById,
+  updateAttributeProductById,
+  updateProdudctById,
 } = require("../repositories/product.repo");
 const { BadRequestError } = require("../middlewares/core/error.response");
 const ProductFactory = require("./product.factory");
+const { update } = require("lodash");
 
 class ProductService {
   static async createProduct(type, productData) {
@@ -55,6 +60,35 @@ class ProductService {
   // Lấy tất cả sản phẩm
   static async findAllProductForShop({ shop, limit = 50, skip = 0 }) {
     return findAllProductForShop({ shop, limit, skip });
+  }
+
+  // Update product: Phải đảm bảo loại được các giá trị undefine hoặc none
+  static async updateProductById(productId, updateData) {
+
+    // Lấy sản phẩm và attribute của nó lên
+    const product = await findProductById(productId);
+    let attributes = null;
+    if (product.type) {
+      attributes = await findAttributesProductById(productId, product.type);
+    }
+    // Cập nhật thông tin chính của sản phẩm
+    const updatedProduct = await updateProdudctById(productId, updateData);
+
+    // Cập nhật attributes nếu có dữ liệu attributes trong updateData
+    let updatedAttributes = attributes; // Giữ nguyên attributes cũ nếu không cập nhật
+    if (updateData.attributes && product.type) {
+      updatedAttributes = await updateAttributeProductById(
+        productId,
+        product.type,
+        updateData.attributes
+      );
+    }
+
+    // 4. Trả về kết quả
+    return {
+      product: updatedProduct,
+      attributes: updatedAttributes,
+    };
   }
 }
 

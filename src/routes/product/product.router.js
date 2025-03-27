@@ -13,10 +13,10 @@ router.use("/shop/products/search", ProductController.searchProduct);
 // Authen khi get resource
 // router.use(auth);
 router.use(
-  "/shop/products/-new-product",
+  "/shop/products/add-new-product",
   asyncHandle(ProductController.createProduct)
 );
-router.use(             
+router.use(
   "/shop/products/drafts/all",
   asyncHandle(ProductController.getAllDraftForShop)
 );
@@ -31,6 +31,10 @@ router.use(
 router.use(
   "/shop/products/all",
   asyncHandle(ProductController.findAllProductForShop)
+);
+router.use(
+  "/shop/products/update/:id",
+  asyncHandle(ProductController.updateProductById)
 );
 
 module.exports = router;

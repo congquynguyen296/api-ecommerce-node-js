@@ -9,6 +9,7 @@ const {
 } = require("../models/product.model");
 
 const { Types } = require("mongoose");
+const { filterNonNullData } = require("../utils/joinDataUtils");
 
 // Skip: Số lượng document bỏ qua (cũng dùng để phân trang).
 const findAllDraftForShop = async ({ query, limit, skip }) => {
@@ -104,10 +105,103 @@ const findAllProductForShop = async ({ shop, limit = 50, skip = 0 }) => {
   return products;
 };
 
+// Lấy sản phẩm theo Id
+const findProductById = async (productId) => {
+  const product = await ProductModel.findById(productId)
+    .select("-__v, -isDraft, -isPublic, -createAt, -updateAt")
+    .lean();
+
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  return product;
+};
+
+// Lấy ra các thuộc tính
+const findAttributesProductById = async (productId, type) => {
+  let attributes = null;
+  switch (type) {
+    case "Clothing":
+      attributes = await ClothingModel.findOne({ _id: productId });
+      break;
+    case "Jewelry":
+      attributes = await JewelryModel.findOne({ _id: productId });
+      break;
+    case "Shoes":
+      attributes = await ShoesModel.findOne({ _id: productId });
+      break;
+  }
+  if (!attributes) {
+    throw NotFoundError("Attributes is null");
+  }
+  return attributes;
+};
+
+// Cập nhật sản phẩm (các thuộc tính chính)
+const updateProdudctById = async (productId, updateData) => {
+  const filleredUpdateData = filterNonNullData(updateData);
+  console.log(filleredUpdateData);
+
+  const updatedProduct = ProductModel.findByIdAndUpdate(
+    productId,
+    {
+      $set: filleredUpdateData,
+    },
+    {
+      new: true, // Trả về document mới khi cập nhật (mặc định là trả về cái cũ)
+      runValidators: true, // Sử dụng validation của mongoose
+    }
+  )
+    .select("-__v, -isDraft, -isPublic, -createAt, -updateAt")
+    .lean();
+  return updatedProduct;
+};
+
+// Update các thuộc tính chi tiết
+const updateAttributeProductById = async (productId, type, attributeData) => {
+  const filteredAttributes = filterNonNullData(attributeData);
+  let updatedAttributes = null;
+  switch (type) {
+    case "Clothing":
+      updatedAttributes = await ClothingModel.findOneAndUpdate(
+        { _id: productId },
+        { $set: filteredAttributes },
+        { new: true, runValidators: true }
+      )
+        .select("-__v, -createAt, -updateAt")
+        .lean();
+      break;
+    case "Jewelry":
+      updatedAttributes = await JewelryModel.findOneAndUpdate(
+        { _id: productId },
+        { $set: filteredAttributes },
+        { new: true, runValidators: true }
+      )
+        .select("-__v, -createAt, -updateAt")
+        .lean();
+      break;
+    case "Shoes":
+      updatedAttributes = await ShoesModel.findOneAndUpdate(
+        { _id: productId },
+        { $set: filteredAttributes },
+        { new: true, runValidators: true }
+      )
+        .select("-__v, -createAt, -updateAt")
+        .lean();
+      break;
+  }
+  return updatedAttributes;
+};
+
 module.exports = {
   findAllDraftForShop,
   publishProductByShop,
   unpublishProductByShop,
   searchProduct,
   findAllProductForShop,
+  findProductById,
+  findAttributesProductById,
+  updateAttributeProductById,
+  updateProdudctById,
 };

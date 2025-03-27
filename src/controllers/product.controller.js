@@ -101,6 +101,18 @@ class ProductController {
       }),
     }).send(res);
   };
+
+  updateProductById = async (req, res, next) => {
+    const productId = req.params.id;
+    const updateData = req.body
+    if (!productId) {
+      throw new BadRequestError("Product id must be required");
+    }
+    return new OkResponse({
+      message: "Update success",
+      metadata: await ProductService.updateProductById(productId, updateData),
+    }).send(res);
+  };
 }
 
 module.exports = new ProductController();
