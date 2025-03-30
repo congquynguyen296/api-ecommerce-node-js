@@ -1,6 +1,5 @@
 "use strict";
 
-const { Types } = require("mongoose");
 const InventoryModel = require("../models/inventory.model");
 
 const insertIntoInventory = async (

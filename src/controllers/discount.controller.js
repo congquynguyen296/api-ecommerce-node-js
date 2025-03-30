@@ -43,6 +43,36 @@ class DiscountController {
       next(error);
     }
   };
+
+  // Apply discount
+  applyDiscount = async (req, res, next) => {
+    try {
+
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Delete discount
+  deleteDiscount = async (req, res, next) => {
+    try {
+      
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Cancle discount
+  cancleDiscount = async (req, res, next) => {
+    try {
+      
+
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new DiscountController();

@@ -16,7 +16,7 @@ const discountSchema = new Schema(
     end_date: { type: Date, require: true },
     max_uses: { type: Number, require: true }, // Slg tối đa
     used_count: { type: Number, require: true }, // Đã dùng
-    users_uses: { type: Array, default: [] }, // Những user đã dùng
+    users_uses: { type: Array, default: [] }, // Những user đã dùng (có thể có nhiều ID trùng nhau nếu 1 ng dùng nhiều lần --> Tiện cho việc check sau này)
     max_use_per_user: { type: Number, require: true }, // Giá trị cho phép sử dụng / user
     min_order_value: { type: Number, require: true },
     shop: { type: Types.ObjectId, ref: "Shop" },
