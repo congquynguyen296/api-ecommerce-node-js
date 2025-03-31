@@ -7,6 +7,7 @@ const router = express.Router();
 const ProductController = require("../controllers/product.controller");
 const AuthController = require("../controllers/auth.controller");
 const DiscountController = require("../controllers/discount.controller");
+const CartController = require("../controllers/cart.controller");
 
 /// Auth
 router.use("/shop/auth/log-out", asyncHandle(AuthController.logout));
@@ -47,5 +48,13 @@ router.use(
   "/shop/discounts/create-new-discount",
   asyncHandle(DiscountController.createDiscount)
 );
+
+/// Cart
+router.post("/shop/cart/add", asyncHandle(CartController.addToCart));
+router.patch("/shop/cart/reduce", asyncHandle(CartController.reduceProductQuantity));
+router.patch("/shop/cart/increase", asyncHandle(CartController.increaseProductQuantity));
+router.get("/shop/cart/", asyncHandle(CartController.getCart));
+router.delete("/shop/cart/item", asyncHandle(CartController.deleteItemInCart));
+router.delete("/shop/cart/", asyncHandle(CartController.deleteCart));
 
 module.exports = router;

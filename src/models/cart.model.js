@@ -22,7 +22,7 @@ const cartSchema = new Schema(
      * ]
      */
     count_product: { type: Number, default: 0 },
-    user: { type: String, require: true }, // Để tạm number để test
+    user: { type: String, require: true }, // Để tạm String để test
   },
   {
     collection: COLLECTION_NAME,

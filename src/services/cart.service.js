@@ -1,7 +1,3 @@
-/// Một số vấn đề lý thuyết
-// 1. Nên tạo mới giỏ hàng ngay khi user login hoặc register
-// 2. Khi update số lượng, nên tracking với server luôn
-
 "use strict";
 
 const { Types } = require("mongoose");
@@ -11,24 +7,19 @@ const { NotFoundError } = require("../middlewares/core/error.response");
 
 class CartService {
   // 1. Add product to cart
-  /**
-   *
-   * @param {userId} ObjectId
-   * @param {product} Object
-   */
   static addProductToCart = async ({ userId, product }) => {
-    // Check cart có tồn tại hay không: Chưa có giỏ hàng thì create
-    const existedCart = CartModel.findOne({ user: userId }).lean();
+    const existedCart = await CartModel.findOne({
+      user: userId,
+      state: "ACTIVE",
+    }).lean();
     if (!existedCart) {
       return await createCart({ userId, product });
     }
 
-    // Nếu khác rỗng, tìm kiếm sản phẩm trong db để tăng số lượng nếu có
-    const productIndex = existedCart.products.findIndex((p) => {
-      p.productId.toString() === product.productId.toString();
-    });
+    const productIndex = existedCart.products.findIndex(
+      (p) => p.productId.toString() === product.productId.toString()
+    );
 
-    // Tìm thấy trong giỏ hàng
     if (productIndex > -1) {
       const updateQuery = {
         $inc: {
@@ -37,25 +28,21 @@ class CartService {
         },
       };
       return await CartModel.findOneAndUpdate(
-        {
-          user: new Types.ObjectId(userId),
-          state: "ACTIVE",
-        },
+        { user: new Types.ObjectId(userId), state: "ACTIVE" },
         updateQuery,
-        {
-          new: true,
-        }
+        { new: true }
       );
     } else {
-      // Không tìm thấy thì thêm
-      return await CartModel.findOneAndUpdate(
+      // Thêm sản phẩm mới và tính lại count_product
+      const updatedCart = await CartModel.findOneAndUpdate(
         { user: new Types.ObjectId(userId), state: "ACTIVE" },
         {
           $push: { products: product },
-          $inc: { count_product: 1 },
+          $inc: { count_product: product.quantity || 1 },
         },
         { new: true }
       );
+      return updatedCart;
     }
   };
 
@@ -65,39 +52,40 @@ class CartService {
     productId,
     quantity = 1,
   }) => {
-    const existedCart = await CartModel.findOne({
+    const cart = await CartModel.findOne({
       user: new Types.ObjectId(userId),
       state: "ACTIVE",
     }).lean();
-    if (!existedCart) {
+    if (!cart) {
       throw new NotFoundError("Cart is not existed");
     }
 
-    const productIndex = existedCart.products.findIndex(
+    const productIndex = cart.products.findIndex(
       (p) => p.productId.toString() === productId.toString()
     );
     if (productIndex === -1) {
       throw new NotFoundError("Product invalid in cart");
     }
 
-    const currentQuantity = existedCart.products[productIndex].quantity;
+    const currentQuantity = cart.products[productIndex].quantity;
     const newQuantity = currentQuantity - quantity;
 
-    if (newQuantity <= 0) {
+    if (newQuantity < 0) {
+      throw new Error("Quantity cannot be reduced below 0");
+    }
+
+    if (newQuantity === 0) {
+      // Xóa sản phẩm khỏi mảng products, nhưng giữ giỏ hàng nếu còn sản phẩm khác
       return await CartModel.findOneAndUpdate(
-        {
-          user: new Types.ObjectId(userId),
-          state: "ACTIVE",
-        },
+        { user: new Types.ObjectId(userId), state: "ACTIVE" },
         {
           $pull: { products: { productId: productId } },
-          count_product: -quantity,
+          $inc: { count_product: -currentQuantity }, // Giảm đúng số lượng hiện tại
         },
-        {
-          new: true,
-        }
+        { new: true }
       );
     }
+
     return await CartModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId), state: "ACTIVE" },
       {
@@ -120,15 +108,14 @@ class CartService {
       user: new Types.ObjectId(userId),
       state: "ACTIVE",
     }).lean();
-
     if (!cart) throw new NotFoundError("Cart not found");
 
     const productIndex = cart.products.findIndex(
       (p) => p.productId.toString() === productId.toString()
     );
-
-    if (productIndex === -1)
+    if (productIndex === -1) {
       throw new NotFoundError("Product not found in cart");
+    }
 
     return await CartModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId), state: "ACTIVE" },
@@ -148,7 +135,6 @@ class CartService {
       user: new Types.ObjectId(userId),
       state: "ACTIVE",
     }).lean();
-
     if (!cart) {
       throw new NotFoundError("Cart not existed");
     }
@@ -161,7 +147,6 @@ class CartService {
       user: new Types.ObjectId(userId),
       state: "ACTIVE",
     }).lean();
-
     if (!cart) {
       throw new NotFoundError("Can not delete item in cart");
     }
@@ -169,16 +154,16 @@ class CartService {
     const productIndex = cart.products.findIndex(
       (p) => p.productId.toString() === productId.toString()
     );
-
     if (productIndex === -1) {
       throw new NotFoundError("Product not found in cart");
     }
 
+    const quantityToRemove = cart.products[productIndex].quantity;
     return await CartModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId), state: "ACTIVE" },
       {
         $pull: { products: { productId: productId } },
-        $inc: { count_product: -1 },
+        $inc: { count_product: -quantityToRemove }, // Giảm đúng số lượng
       },
       { new: true }
     );
@@ -190,7 +175,6 @@ class CartService {
       user: new Types.ObjectId(userId),
       state: "ACTIVE",
     });
-
     if (!result) throw new NotFoundError("Cart not found");
     return { deleted: true };
   };
