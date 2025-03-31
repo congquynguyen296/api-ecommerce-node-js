@@ -194,6 +194,25 @@ const updateAttributeProductById = async (productId, type, attributeData) => {
   return updatedAttributes;
 };
 
+/**
+ *
+ * @param {products} Array: Mảng sản phẩm cần check trong checkout service
+ */
+const checkProductByServer = async (products) => {
+  return await Promise.all(
+    products.map(async (product) => {
+      const existedProduct = await findProductById(product.productId);
+      if (existedProduct) {
+        return {
+          price: existedProduct.price, // Lấy giá từ DB
+          quantity: product.quantity, // Giữ quantity từ request
+          productId: existedProduct._id,
+        };
+      }
+    })
+  );
+};
+
 module.exports = {
   findAllDraftForShop,
   publishProductByShop,
@@ -204,4 +223,5 @@ module.exports = {
   findAttributesProductById,
   updateAttributeProductById,
   updateProdudctById,
+  checkProductByServer,
 };
