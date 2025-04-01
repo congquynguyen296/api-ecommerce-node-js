@@ -4,10 +4,17 @@ const { Types } = require("mongoose");
 const CartModel = require("../models/cart.model");
 const { createCart } = require("../repositories/cart.repo");
 const { NotFoundError } = require("../middlewares/core/error.response");
+const { findProductById } = require("../repositories/product.repo");
 
 class CartService {
   // 1. Add product to cart
   static addProductToCart = async ({ userId, product }) => {
+
+    const validProduct = await findProductById(product.productId);
+    if (!validProduct) {
+      throw new NotFoundError("Product not found in database");
+    }
+    
     const existedCart = await CartModel.findOne({
       user: userId,
       state: "ACTIVE",
@@ -24,7 +31,7 @@ class CartService {
       const updateQuery = {
         $inc: {
           [`products.${productIndex}.quantity`]: product.quantity || 1,
-          count_product: product.quantity || 1,
+          count_product: count_product + product.quantity,
         },
       };
       return await CartModel.findOneAndUpdate(
@@ -38,7 +45,7 @@ class CartService {
         { user: new Types.ObjectId(userId), state: "ACTIVE" },
         {
           $push: { products: product },
-          $inc: { count_product: product.quantity || 1 },
+          $inc: { count_product: count_product + product.quantity },
         },
         { new: true }
       );

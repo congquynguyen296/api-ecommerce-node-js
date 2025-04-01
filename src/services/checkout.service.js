@@ -83,7 +83,29 @@ class CheckoutService {
 
     return { shopOrderIds, shopOrderIdsNew, checkoutOrder };
   };
+
   // 2. Query order [User]:
+  static orderByUser = async ({
+    shopOrderIds,
+    cartId,
+    userId,
+    userAddress = {},
+    userPayment = {},
+  }) => {
+    // Thực hiện review lại lần nữa
+    const { shopOrderIdsNew, checkoutOrder } = await this.checkoutReview({
+      cartId,
+      userId,
+      shopOrderIds,
+    });
+
+    // Dùng flat map để lấy được array product
+    const products = shopOrderIdsNew.flatMap(order => order.itemProducts);
+    console.log(products);
+
+    // Kiểm tra trong kho: Sử dụng Optimistic lock
+
+  };
 
   // 3. Query order using it's ID [User]:
 

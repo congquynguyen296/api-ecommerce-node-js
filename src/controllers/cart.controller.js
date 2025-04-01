@@ -6,7 +6,7 @@ const CartService = require("../services/cart.service");
 class CartController {
   // 1. Thêm sản phẩm vào giỏ hàng
   static addToCart = async (req, res, next) => {
-    new CreatedResponse({
+    return new CreatedResponse({
       message: "Add product to cart successfully",
       metadata: await CartService.addProductToCart({
         userId: req.body.userId, // UserId nữa sẽ được lấy từ middleware auth
@@ -17,7 +17,7 @@ class CartController {
 
   // 2. Giảm số lượng sản phẩm
   static reduceProductQuantity = async (req, res, next) => {
-    new OkResponse({
+    return new OkResponse({
       message: "Reduce product quantity successfully",
       metadata: await CartService.reduceProductQuantity({
         userId: req.body.userId,
@@ -29,7 +29,7 @@ class CartController {
 
   // 3. Tăng số lượng sản phẩm
   static increaseProductQuantity = async (req, res, next) => {
-    new OkResponse({
+    return new OkResponse({
       message: "Increase product quantity successfully",
       metadata: await CartService.increaseProductQuantity({
         userId: req.body.userId,
@@ -41,7 +41,7 @@ class CartController {
 
   // 4. Lấy thông tin giỏ hàng
   static getCart = async (req, res, next) => {
-    new OkResponse({
+    return new OkResponse({
       message: "Get cart successfully",
       metadata: await CartService.getCart(req.body.userId),
     }).send(res);
@@ -49,7 +49,7 @@ class CartController {
 
   // 5. Xóa sản phẩm khỏi giỏ hàng
   static deleteItemInCart = async (req, res, next) => {
-    new OkResponse({
+    return new OkResponse({
       message: "Delete item in cart successfully",
       metadata: await CartService.deleteItemInCart({
         userId: req.body.userId,
@@ -60,7 +60,7 @@ class CartController {
 
   // 6. Xóa toàn bộ giỏ hàng
   static deleteCart = async (req, res, next) => {
-    new OkResponse({
+    return new OkResponse({
       message: "Delete cart successfully",
       metadata: await CartService.deleteCart(req.body.userId),
     }).send(res);

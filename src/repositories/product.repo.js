@@ -111,10 +111,6 @@ const findProductById = async (productId) => {
     .select("-__v, -isDraft, -isPublic, -createAt, -updateAt")
     .lean();
 
-  if (!product) {
-    throw new NotFoundError("Product not found");
-  }
-
   return product;
 };
 

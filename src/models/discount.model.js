@@ -20,7 +20,7 @@ const discountSchema = new Schema(
     max_use_per_user: { type: Number, require: true }, // Giá trị cho phép sử dụng / user
     min_order_value: { type: Number, require: true },
     shop: { type: Types.ObjectId, ref: "Shop" },
-    is_actice: { type: Boolean, default: true },
+    is_active: { type: Boolean, default: true },
     applies_to: { type: String, require: true, enum: ["ALL", "SOME"] }, // Apply cho tất cả hay một vài
     product_ids: { type: Array, default: [] }, // Nếu là SOME thì đây là các sp được áp dụng
   },
