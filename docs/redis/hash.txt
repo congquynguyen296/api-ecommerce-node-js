@@ -1,0 +1,31 @@
+1. Các lệnh hay dùng
+    - HSET key field value: Gán giá trị value cho trường field trong hash có key là key. Nếu field
+    đã tồn tại, giá trị sẽ bị ghi đè.
+    - HMSET key field1 value1 field2 value2 ...: Gán nhiều cặp field-value cùng lúc (lưu ý: lệnh 
+    này đã bị deprecated từ Redis 4.0, thay bằng HSET).
+    - HSETNX key field value: Chỉ gán giá trị nếu field chưa tồn tại (NX = "not exists").
+    
+    - HGET key field: Lấy giá trị của một field trong hash
+    - HMGET key field1 field2 ...: Lấy giá trị của nhiều field cùng lúc.
+    - HGETALL key: Lấy toàn bộ cặp field-value trong hash.
+    - HKEYS key: Lấy tất cả các field trong hash.
+    - HVALS key: Lấy tất cả giá trị (values) trong hash, bỏ qua các field.
+
+    - HDEL key field1 [field2 ...]: Xóa một hoặc nhiều field khỏi hash.
+    - HEXISTS key field: Kiểm tra xem field có tồn tại trong hash không (trả về 1 nếu có, 0 nếu không).
+    - HLEN key: Đếm số lượng field trong hash.
+
+    - HINCRBY key field increment: Tăng giá trị của field (phải là số nguyên) lên một lượng increment.
+    - HINCRBYFLOAT key field increment: Tăng giá trị của field bằng một số thực.
+    - HSCAN key cursor [MATCH pattern] [COUNT count]: Duyệt qua các field-value trong hash theo kiểu 
+    cursor, hữu ích khi hash có nhiều phần tử.
+    VD: HSCAN user:1 0 MATCH n*  # Tìm các field bắt đầu bằng "n"
+
+2. Ứng dụng thực tế
+    - HLEN: Lưu số lượng sản phẩm trong giỏ hàng
+
+    Trong giỏ hàng, xét mỗi sản phẩm trong giỏ
+    - HSET product:id -> tên sản phẩm (đã được chuyển sang code)
+    - HINCRBY -> tăng số lượng (khi KH ấn dấu +)
+    - HDECBY -> giảm số lượng (khi KH ấn dấu -)
+    

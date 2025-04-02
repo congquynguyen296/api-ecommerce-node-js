@@ -1,0 +1,47 @@
+1. Redis string:
+    - String có 3 loại mã hóa:
+    + embstr: <= 44byte
+    + raw: > 44byte
+    + int: kiểu số
+
+    - Quy chuẩn đặt tên: user:id, product:id,... hoặc user:id:field, product:id:field,...
+
+2. Thao tác với dữ liệu cơ bản:
+    - SET <key> <value>: set một key với value
+    - GET <key>: get ra key
+    - EXIST <key>: check tồn tại (1 là có 0 là không)
+    - STRLEN <key>: lấy độ dài của key
+    - OBJECT ENCODING <key>: kiểm tra kiểu dữ liệu
+    - DEL <key>: xóa key (1 là thành công)
+
+    - MSET <key1> <value1> <key2> <value2>: set hàng loạt
+    - MGET <key1> <key2>: get hàng loạt
+    - KEYS '': tìm key --> trong dấu '' là điều kiện tìm
+
+3. Một số ứng dụng thực tế:
+    Xét bài viết 0001, có field like là integer --> key = 0001:like
+    - SET 0001:like 0: set giá trị ban đầu
+    - INCR 0001:like: tăng giá trị lên 1 đơn vị
+    - INCRBY 0001:like 10: tăng giá trị lên 10
+    - DECR 0001:like: giảm giá trị lên 1 đơn vị
+    - DECRBY 0001:like 10: giảm giá trị xuống 10  
+
+    Đặt một khóa với thời gian hết hạn:
+    - EXPRIED <key> <time>: time đơn vị là giây
+    - TTL <key>: kiểm tra thời gian sống
+    --> Lệnh rút gọn: SET <key> <value> EX <time>
+
+    Ứng dụng quan trọng: lưu cache, count (đếm lượt thích, lượt đọc, số lượng,...) và khóa phân tán
+    - Trong redis, khóa phân tán (distributed lock) là một cơ chế quan trọng để đảm bảo rằng chỉ 
+    một tiến trình hoặc luồng (thread) có thể truy cập vào một tài nguyên chung tại một thời điểm 
+    trong hệ thống phân tán.
+    - SETNX <key> <value>: set một key nếu chưa tồn tại, còn nếu đã có rồi thì kh set được
+
+4. Tính Atomic:
+    - Trong Redis, khái niệm atomic (nguyên tử) liên quan đến việc đảm bảo một thao tác hoặc một nhóm
+    thao tác được thực hiện hoàn toàn hoặc không thực hiện gì cả, không bị gián đoạn bởi các tiến 
+    trình khác.
+    - Không phải tất cả các hoạt động trong Redis đều tự động atomic
+    + Lệnh đơn: luôn atomic
+    + Lệnh đa: không mang tính atomic trừ khi dùng LUA Script hoặc MUL/EXEC
+

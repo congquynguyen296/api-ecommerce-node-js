@@ -1,0 +1,17 @@
+1. Các hàm hay sử dụng
+    - LPUSH, LPUSHX
+    - RPUSH, RPUSHX
+    - LPOP, RPOP: xóa sau đó trả về phần tử đã xóa
+    - LRANGE: lấy danh sách
+    - LREM key count value: Xóa count lần xuất hiện của value trong danh sách.
+        + count < 0: Xóa đầu
+        + count > 0: Xóa cuối
+        + count == 0: Xóa hết
+    - LLEN key: Trả về độ dài của danh sách.
+    - LINDEX key index: Trả về phần tử tại chỉ số index.
+    - LTRIM key start stop: Cắt danh sách chỉ giữ lại các phần tử trong phạm vi start đến stop.
+    - LINSERT key top AFTER (BEFORE) value1 value2: Thêm value2 sau (trước) value1 của key
+
+    - BLPOP key [key ...] timeout: Xóa và trả về phần tử đầu tiên, chờ nếu danh sách rỗng.
+    - BRPOP key [key ...] timeout: Xóa và trả về phần tử cuối cùng, chờ nếu danh sách rỗng.
+    VD: BLPOP mylist 10  # Chờ tối đa 10 giây để lấy phần tử đầu tiên
