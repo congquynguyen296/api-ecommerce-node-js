@@ -4,9 +4,12 @@ const {
   NotFoundError,
   BadRequestError,
 } = require("../middlewares/core/error.response");
+const { Types } = require("mongoose");
 const { findCartById } = require("../repositories/cart.repo");
 const { checkProductByServer } = require("../repositories/product.repo");
 const { applyDiscountCode } = require("./discount.service");
+const { acquiredLock, releaseLock } = require("./redis.service");
+const OrderModel = require("../models/order.model");
 
 class CheckoutService {
   // 1. Create new order [User]:
@@ -85,6 +88,13 @@ class CheckoutService {
   };
 
   // 2. Query order [User]:
+  /**
+   * Optimistic: khóa lạc quan giả định rằng xung đột hiếm khi xảy ra. Thay vì khóa tài nguyên ngay
+   * lập tức, nó cho phép nhiều tiến trình truy cập và chỉ kiểm tra xung đột khi dữ liệu được cập
+   * nhật. Thường sử dụng phiên bản (version) hoặc dấu thời gian (timestamp) để xác định xem dữ liệu
+   * có bị thay đổi bởi tiến trình khác hay không. Nếu có xung đột, tiến trình sẽ phải thử lại.
+   * @param {*} param0
+   */
   static orderByUser = async ({
     shopOrderIds,
     cartId,
@@ -92,7 +102,7 @@ class CheckoutService {
     userAddress = {},
     userPayment = {},
   }) => {
-    // Thực hiện review lại lần nữa
+    // Thực hiện review lại lần nữa: Tránh được tấn công DOS
     const { shopOrderIdsNew, checkoutOrder } = await this.checkoutReview({
       cartId,
       userId,
@@ -100,11 +110,36 @@ class CheckoutService {
     });
 
     // Dùng flat map để lấy được array product
-    const products = shopOrderIdsNew.flatMap(order => order.itemProducts);
-    console.log(products);
+    const products = shopOrderIdsNew.flatMap((order) => order.itemProducts);
+    console.log(`[1]:: ${products}`);
 
-    // Kiểm tra trong kho: Sử dụng Optimistic lock
+    // Kiểm tra trong kho: Sử dụng Optimistic lock (redis service)
+    const acquireProducts = [];
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquiredLock(productId, quantity, cartId);
+      if (!keyLock) {
+        await releaseLock(keyLock);
+      }
+      acquireProducts.push(keyLock ? true : false);
+    }
 
+    // Check: nếu có 1 sp không đủ hàng (acquireProducts exist false) -> thông báo
+    if (acquireProducts.includes(false)) {
+      throw new BadRequestError("Some products were updated, pls try again");
+    }
+
+    // Tạo new order nếu đủ hàng
+    const newOrder = await OrderModel.create({
+      user: new Types.ObjectId(userId),
+      checkout: checkoutOrder,
+      shipping: userAddress,
+      payment: userPayment,
+      products: shopOrderIdsNew,
+    });
+
+    // Nếu insert thành công: Xóa product có trong giỏ hàng
+    
   };
 
   // 3. Query order using it's ID [User]:

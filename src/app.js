@@ -4,6 +4,11 @@ const { default: helmet } = require("helmet");
 const compression = require("compression");
 const app = express();
 
+// Test pub sub
+// require("./test/inventory.test");
+// const ProductTest = require("./test/product.test");
+// ProductTest.purcharseProduct("product:001", 100);
+
 // Sử dụng được các biến môi trường trong ứng dụng
 require("dotenv").config();
 

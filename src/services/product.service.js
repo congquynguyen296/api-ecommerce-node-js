@@ -14,6 +14,7 @@ const {
 } = require("../repositories/product.repo");
 const { BadRequestError } = require("../middlewares/core/error.response");
 const ProductFactory = require("./product.factory");
+const NotificationService = require("../services/notification.service");
 const { insertIntoInventory } = require("../repositories/inventory.repo");
 
 class ProductService {
@@ -45,6 +46,19 @@ class ProductService {
       createdProduct.shop,
       createdProduct.quantity
     );
+
+    // Sau đó push thông báo vào hệ thống: Sẽ tách thành một micro riêng do message queue xử lý
+    NotificationService.pushNotificationSystem({
+      type: "SHOP-001",
+      receivedId: "67f29919e5e0afb95e0c83f8",
+      senderId: productData.shop,
+      options: {
+        productName: productData.name,
+        productPrice: productData.price,
+      },
+    })
+      .then((result) => console.log(result))
+      .catch((error) => console.log(error));
 
     return {
       newProduct: createdProduct,

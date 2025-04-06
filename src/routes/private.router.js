@@ -9,6 +9,7 @@ const AuthController = require("../controllers/auth.controller");
 const DiscountController = require("../controllers/discount.controller");
 const CartController = require("../controllers/cart.controller");
 const CheckoutController = require("../controllers/checkout.controller");
+const NotificationController = require("../controllers/notification.controller");
 
 /// Auth
 router.use("/shop/auth/log-out", asyncHandle(AuthController.logout));
@@ -64,10 +65,22 @@ router.get("/shop/cart/", asyncHandle(CartController.getCart));
 router.delete("/shop/cart/item", asyncHandle(CartController.deleteItemInCart));
 router.delete("/shop/cart/", asyncHandle(CartController.deleteCart));
 
+/// Inventory
+
 /// Order
 router.post(
   "/shop/checkout/review",
   asyncHandle(CheckoutController.checkoutReview)
+);
+router.post(
+  "/shop/checkout/final",
+  asyncHandle(CheckoutController.checkoutReview)
+);
+
+/// Notification
+router.get(
+  "/shop/notifications",
+  asyncHandle(NotificationController.getNotificationForUser)
 );
 
 module.exports = router;
