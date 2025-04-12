@@ -1,0 +1,78 @@
+1. Message queuing
+2. Publish / subcribe
+3. Bốn loại exchange để điều hướng đi vào queue
+4. Lý thuyết: https://viblo.asia/p/tim-hieu-ve-rabbitmq-OeVKB8bMlkW
+
+5. Mỗi consumer sẽ được chia đều msg từ producer. Vậy vấn đề ở đây là nếu có consumer bị chậm thì sao?
+-> Rabbitmq xử lý bằng cách: Mỗi consumer chỉ có thể  nhận duy nhất 1 msg tại một thời điểm, khi xong
+msg đó thì mới nhận tiếp.
+-> Sử dụng channel.perfect(1). Lúc này thì khi consumer nào xử lý nhanh hơn và xong trước thì consumer
+đó có thể nhận tiếp.
+
+6. Nếu server bị vấn đề (sập hoặc crash) thì msg đang đứng trong đó kh thể hoàn thành. Do đó nó cũng sẽ
+kh được set trả ra cho msg vào. 
+-> Sử dụng TTL để set thời gian cho mỗi msg đi vào. Khi đến hạn TTL, dù xong hay không xong vẫn phải out
+
+7. Giả sử như server bị restart, dữ liệu trong queue sẽ chết hay sống?
+-> Sử dụng durable: true để cho phép giữ lại queue khi restart server.
+-> Có thể dùng thêm persistence (này là tính chất của msg và chỉ hoạt động trong queue có durable: true).
+Nó cho phép msg lưu trong cache hoặc disk, khi restart thì lấy lại. 
+
+8. Cờ ack?
+- Vai trò: Xác nhận xử lý thành công (consumer), xóa msg khỏi queue (broker), đảm bảo kh mất msg
+- Cơ chế: Producer gửi msg vào queue -> ... -> Consumer nhận msg (lúc này msg ở status unacked)
+-> Consumer xử lý msg -> Consumer gửi ack đến rabbitmq (channel.ack(msg)):
+    + Thành công: Xóa msg khỏi queue
+    + Lỗi: ack vẫn ở unacked để msg không bị mất
+
+9. Exchange?
+- Đầu tiên, producer kh bao giờ gửi một msg trực tiếp đến queue, mà msg sẽ tới exchange trước.
+Sau đó exchange tùy loại (4 loại) sẽ quyết định msg đi đâu và như thế nào
+- Bốn loại exchange:
+    + fanout: gửi thông điệp đến tất cả các queue được liên kết với nó, bất kể routing key. Routing 
+key bị bỏ qua hoàn toàn (do đó khi publish, routing key có thể để rổng)
+    + direct: định tuyến thông điệp đến queue dựa trên routing key chính xác. Một queue được liên kết (bind)
+với exchange bằng một routing key cụ thể, và thông điệp chỉ được gửi đến queue nếu routing key của 
+thông điệp khớp hoàn toàn với routing key của binding.
+    VD: QueueA bind với routing key error,
+        QueueB bind với routing key success,
+        -> msg có routing key = success thì chỉ tới được QueueB.
+
+    + topic: bind với exchange bằng một routing key pattern sử dụng ký tự đại diện (* và #)
+        * -> Khớp với một từ (word) trong routing key.
+        # -> Khớp với 0 hoặc nhiều từ.
+    VD: Queue A bind với pattern "news.*".
+        Queue B bind với pattern "*.sports".
+        msg với routing key "news.tech" đi đến Queue A.
+        msg với routing key "live.sports" đi đến Queue B.
+        Nếu bind với "#", queue sẽ nhận tất cả thông điệp.
+
+=> Topic là cái được dùng nhiều nhất.
+***Bài toán cụ thể***: Trong một cty, vấn đề mail cho một task sẽ được gửi đến một số bộ phận cụ thể như
+dev, tester, cicd. Thiết kế hệ thống send mail sao cho chỉ 3 bộ phận này nhận được trong khi có rất nhiều
+bộ phận cùng kết nối với task này.
+
+10. Dead letter exchange?
+=> https://www.youtube.com/watch?v=nDxAiAB4UJg&list=PLw0w5s5b9NK4ucXizOF-eKAXKvn9ruCw8&index=49
+
+11. Ứng dụng DLX:
+- Tình huống: Một hệ thống gửi thông báo (email, SMS, push notification) có thể gặp lỗi tạm thời, 
+ví dụ: máy chủ email không phản hồi. Bạn không muốn mất tin nhắn mà muốn thử lại sau.
+
+=> Cách giải quyết:
+- Tin nhắn thông báo được gửi vào queue chính (như notificationQueueProcess) với TTL (ví dụ: 5 giây)
+- Nếu consumer (như consumerToQueueNormal) không xử lý được trong 5 giây (do lỗi hoặc trì hoãn), tin 
+nhắn hết hạn và được chuyển đến DLX (notificationExchangeDLX), rồi vào queue xử lý lỗi (notificationQueueHotFix).
+- Consumer lỗi (consumerToQueueFailure) sẽ xử lý tin nhắn, ví dụ: lưu vào database để thử lại sau hoặc
+gửi qua một kênh dự phòng (SMS thay vì email).
+
+12. Msg theo thứ tự:
+- Tình huống: Trong các hệ thống đặt vé (vé máy bay, vé xem phim) hoặc đặt hàng, các yêu cầu phải được xử lý theo 
+thứ tự để tránh xung đột hoặc đặt trùng.
+
+=> Cách giải quyết:
+- Mỗi yêu cầu đặt vé/hàng được gửi vào queue.
+- Consumer sử dụng prefetch(1) để xử lý từng yêu cầu, kiểm tra tính khả dụng trước khi xác nhận.
+
+***Nhược điểm: Nếu queue crash -> msg bị giữ -> dead
+=> Dùng lại DLX ở trên, gán cho một queue khác xử lý khi có vấn đề với queue hiện tại

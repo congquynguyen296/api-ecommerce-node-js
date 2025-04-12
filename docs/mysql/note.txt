@@ -1,0 +1,21 @@
+1. Partition:
+    + Khả năng mở rộng: Khi chia partition, các partition sẽ được phân bổ ở disk
+-> có thể dễ quản lý, tránh tắc nghẽn.
+    + Quản lý, vận hành và bảo trì: Các data kh dùng lâu có thể chia làm một phân vùng
+-> khi del thì del luôn một partition.
+
+*** Ví dụ: Tốc độ tăng trưởng record trong bảng orders là 15.000.000 bản / tháng
+=> Giải pháp:
+- Chọn col để làm partition key -> PRIMARY KEY (id, order_date)) => Phân theo thgian
+- Tạo partition
+    PARTITION BY RANGE COLUMNS (order_date) (
+		PARTITION p2022 VALUES LESS THAN ('2022-01-01'),
+		PARTITION p2023 VALUES LESS THAN ('2023-01-01'),
+		PARTITION p2024 VALUES LESS THAN ('2024-01-01'),
+		PARTITION pmax VALUES LESS THAN (MAXVALUE)
+    );
+- Select theo partition: 
+    SELECT * FROM orders PARTITION (p2023) -> Trả về các bản ghi có order_date < 2023 (là của p2022)
+
+- Lưu ý:
+    + Partition không cải thiện hiệu suất CSDL -> chỉ hỗ trợ quản lý và custom query

@@ -74,7 +74,6 @@ class NotificationService {
             createdAt: 1,
             updatedAt: 1,
             "sender_info._id": 1,
-            "sender_info.name": 1, // Giả sử Shop có field name, bạn có thể điều chỉnh
           },
         },
         { $sort: { createdAt: -1 } }, // Sắp xếp theo thời gian tạo, mới nhất trước
